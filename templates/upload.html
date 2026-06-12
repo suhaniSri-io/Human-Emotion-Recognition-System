@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Image | Emotion AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>Emotion AI</h2>
+    <a href="/">🏠 Home</a>
+    <a href="/upload">📁 Upload Image</a>
+    <a href="/logout">🚪 Logout</a>
+</div>
+
+<div class="main">
+
+    <h1>Upload Image for Emotion Detection</h1>
+
+    <div class="upload-container">
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="upload-box">
+                <input type="file" name="image" required>
+                <p>📁 Choose an image or drag & drop</p>
+            </div>
+
+            <button type="submit">Detect Emotion</button>
+
+        </form>
+
+        {% if emotion %}
+        <div class="result-card">
+            <h2>🎯 Detected Emotion</h2>
+            <p class="emotion">{{ emotion }}</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

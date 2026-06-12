@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emotion AI Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>Emotion AI</h2>
+
+    <a href="/">🏠 Home</a>
+    <a href="/upload">📁 Upload Image</a>
+    <a href="/logout">🚪 Logout</a>
+</div>
+
+<div class="main">
+
+    <h1>AI Emotion Recognition Dashboard</h1>
+
+   <div class="card-container">
+
+```
+<!-- LIVE CAMERA -->
+<div class="card">
+    <h3>🎥 Live Detection</h3>
+
+    <video
+        id="webcam"
+        autoplay
+        playsinline
+        class="video-box">
+    </video>
+</div>
+
+<!-- STATUS PANEL -->
+<div class="card">
+    <h3>📊 System Status</h3>
+
+    <div class="status-box">
+
+        <div class="status-item live">
+            <span class="pulse"></span>
+            Live Emotion:
+            <span id="emotion">Starting...</span>
+        </div>
+
+        <div class="status-item active">
+            <span class="dot"></span>
+            Model Loaded
+        </div>
+
+        <div class="status-item active">
+            <span class="dot"></span>
+            Camera Active
+        </div>
+
+        <div class="status-item active">
+            <span class="dot"></span>
+            Deep Learning Engine
+        </div>
+
+        <div class="status-item live">
+            <span class="pulse"></span>
+            System Running
+        </div>
+
+    </div>
+
+    <hr>
+
+    <h3>📌 Quick Info</h3>
+    <p>Real-time emotion detection system using AI & Deep Learning.</p>
+</div>
+```
+
+</div>
+
+<!-- ANALYTICS CARD -->
+
+<div class="card" style="margin-top:20px;">
+    <h3>📊 Emotion Analytics</h3>
+    <canvas id="emotionChart"></canvas>
+</div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+// ---------------- CHART ----------------
+
+const ctx = document.getElementById('emotionChart').getContext('2d');
+
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Emotion Count',
+            data: []
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+async function updateChart() {
+    try {
+        const response = await fetch('/emotion_stats');
+        const data = await response.json();
+
+        chart.data.labels = Object.keys(data);
+        chart.data.datasets[0].data = Object.values(data);
+        chart.update();
+
+    } catch (error) {
+        console.log("Chart Error:", error);
+    }
+}
+
+setInterval(updateChart, 2000);
+updateChart();
+
+
+// ---------------- WEBCAM ----------------
+
+const video = document.getElementById("webcam");
+
+navigator.mediaDevices.getUserMedia({
+    video: true
+})
+.then(stream => {
+    video.srcObject = stream;
+})
+.catch(error => {
+    console.log("Camera Error:", error);
+});
+
+
+// ---------------- LIVE EMOTION ----------------
+
+const canvas = document.createElement("canvas");
+
+async function detectEmotion() {
+
+    if (!video.videoWidth) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    const image = canvas.toDataURL("image/jpeg");
+
+    try {
+
+        const response = await fetch('/detect_frame', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image: image
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById("emotion").innerText =
+                data.emotion;
+        }
+
+    } catch (error) {
+        console.log("Emotion Error:", error);
+    }
+}
+
+setInterval(detectEmotion, 2000);
+
+</script>
+
+</body>
+</html>
