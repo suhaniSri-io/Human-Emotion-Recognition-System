@@ -6,8 +6,7 @@ face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 )
 
-camera = cv2.VideoCapture(0)
-
+camera = None
 latest_emotion = "Detecting..."
 
 emotion_stats = {
