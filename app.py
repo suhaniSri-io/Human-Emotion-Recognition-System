@@ -1,5 +1,5 @@
-from flask import Flask, render_template, Response, request, redirect, url_for, session
-from detector import generate_frames, detect_emotion_image
+from flask import Flask, render_template, request, redirect, url_for, session
+from detector import detect_emotion_image
 import detector
 import base64
 import numpy as np
@@ -37,15 +37,6 @@ def home():
     if 'user' not in session:
         return redirect(url_for('login'))
     return render_template("index.html")
-
-# ---------------- VIDEO STREAM ----------------
-@app.route('/video')
-def video():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 # ---------------- IMAGE UPLOAD PAGE ----------------
