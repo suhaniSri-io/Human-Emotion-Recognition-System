@@ -8,194 +8,218 @@
 <body>
 
 <div class="sidebar">
-    <h2>Emotion AI</h2>
+    <div class="brand">
+        <h2>Emotion AI</h2>
+        <span>Live analytics hub</span>
+    </div>
 
-    <a href="/">🏠 Home</a>
-    <a href="/upload">📁 Upload Image</a>
-    <a href="/logout">🚪 Logout</a>
+    <nav>
+        <a href="/" class="active">🏠 Home</a>
+        <a href="/upload">📁 Upload Image</a>
+        <a href="/logout">🚪 Logout</a>
+    </nav>
 </div>
 
 <div class="main">
-
-    <h1>AI Emotion Recognition Dashboard</h1>
-
-   <div class="card-container">
-
-```
-<!-- LIVE CAMERA -->
-<div class="card">
-    <h3>🎥 Live Detection</h3>
-
-    <video
-        id="webcam"
-        autoplay
-        playsinline
-        class="video-box">
-    </video>
-</div>
-
-<!-- STATUS PANEL -->
-<div class="card">
-    <h3>📊 System Status</h3>
-
-    <div class="status-box">
-
-        <div class="status-item live">
-            <span class="pulse"></span>
-            Live Emotion:
-            <span id="emotion">Starting...</span>
+    <div class="top-bar">
+        <div>
+            <h1>Emotion AI Dashboard</h1>
+            <p class="lead">Monitor live facial emotion detection and track trends in real time.</p>
         </div>
-
-        <div class="status-item active">
-            <span class="dot"></span>
-            Model Loaded
+        <div class="action-buttons">
+            <button id="themeToggle" class="button secondary">Toggle Theme</button>
+            <button id="resetStats" class="button warning">Reset Counts</button>
         </div>
-
-        <div class="status-item active">
-            <span class="dot"></span>
-            Camera Active
-        </div>
-
-        <div class="status-item active">
-            <span class="dot"></span>
-            Deep Learning Engine
-        </div>
-
-        <div class="status-item live">
-            <span class="pulse"></span>
-            System Running
-        </div>
-
     </div>
 
-    <hr>
+    <div class="card-grid">
+        <section class="card highlight-card">
+            <div class="card-header">
+                <h3>🎥 Live Detection</h3>
+                <span class="badge">Real-time</span>
+            </div>
+            <video id="webcam" autoplay playsinline class="video-box"></video>
+            <div class="live-summary">
+                <div>
+                    <span>Current emotion</span>
+                    <strong id="emotionLabel">Detecting...</strong>
+                </div>
+                <div>
+                    <span>Last update</span>
+                    <strong id="lastUpdateLabel">Waiting...</strong>
+                </div>
+            </div>
+        </section>
 
-    <h3>📌 Quick Info</h3>
-    <p>Real-time emotion detection system using AI & Deep Learning.</p>
-</div>
-```
-
-</div>
-
-<!-- ANALYTICS CARD -->
-
-<div class="card" style="margin-top:20px;">
-    <h3>📊 Emotion Analytics</h3>
-    <canvas id="emotionChart"></canvas>
-</div>
-
+        <section class="card status-card">
+            <div class="card-header">
+                <h3>📊 System Status</h3>
+                <span class="badge accent">Healthy</span>
+            </div>
+            <div class="status-box">
+                <div class="status-item">
+                    <span class="dot live"></span>
+                    Live camera stream
+                </div>
+                <div class="status-item">
+                    <span class="dot active"></span>
+                    Model loaded
+                </div>
+                <div class="status-item">
+                    <span class="dot active"></span>
+                    Stats tracking
+                </div>
+                <div class="status-item">
+                    <span class="dot active"></span>
+                    Theme toggle ready
+                </div>
+            </div>
+            <div class="info-row">
+                <p>Use the controls above to switch color theme or reset the collected emotion statistics at any time.</p>
+            </div>
+        </section>
     </div>
 
+    <section class="card analytics-card">
+        <div class="card-header">
+            <h3>📈 Emotion Analytics</h3>
+            <span class="badge">Live update</span>
+        </div>
+        <div class="metric-grid">
+            <div class="metric-box">
+                <span>Total tracked</span>
+                <strong id="totalCount">0</strong>
+            </div>
+            <div class="metric-box">
+                <span>Dominant emotion</span>
+                <strong id="dominantEmotion">None yet</strong>
+            </div>
+        </div>
+        <canvas id="emotionChart"></canvas>
+    </section>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-
-// ---------------- CHART ----------------
+const video = document.getElementById('webcam');
+const canvas = document.createElement('canvas');
+const emotionLabel = document.getElementById('emotionLabel');
+const lastUpdateLabel = document.getElementById('lastUpdateLabel');
+const totalCount = document.getElementById('totalCount');
+const dominantEmotion = document.getElementById('dominantEmotion');
+const themeToggle = document.getElementById('themeToggle');
+const resetStats = document.getElementById('resetStats');
 
 const ctx = document.getElementById('emotionChart').getContext('2d');
-
 const chart = new Chart(ctx, {
     type: 'bar',
     data: {
         labels: [],
         datasets: [{
             label: 'Emotion Count',
-            data: []
+            data: [],
+            backgroundColor: [
+                'rgba(99, 102, 241, 0.75)',
+                'rgba(16, 185, 129, 0.75)',
+                'rgba(234, 179, 8, 0.75)',
+                'rgba(168, 85, 247, 0.75)',
+                'rgba(14, 165, 233, 0.75)',
+                'rgba(249, 115, 22, 0.75)',
+                'rgba(244, 63, 94, 0.75)'
+            ],
+            borderRadius: 14,
+            borderWidth: 0
         }]
     },
     options: {
         responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
         scales: {
+            x: {
+                grid: { display: false },
+                ticks: { color: '#cbd5e1' }
+            },
             y: {
-                beginAtZero: true
+                beginAtZero: true,
+                grid: { color: 'rgba(148, 163, 184, 0.18)' },
+                ticks: { color: '#cbd5e1' }
             }
         }
     }
 });
 
-async function updateChart() {
+async function loadStats() {
     try {
         const response = await fetch('/emotion_stats');
         const data = await response.json();
-
-        chart.data.labels = Object.keys(data);
-        chart.data.datasets[0].data = Object.values(data);
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = values;
         chart.update();
 
+        totalCount.innerText = values.reduce((sum, value) => sum + value, 0);
+        const maxEmotion = labels[values.indexOf(Math.max(...values))] || 'None yet';
+        dominantEmotion.innerText = maxEmotion === 'None yet' ? 'None yet' : maxEmotion;
     } catch (error) {
-        console.log("Chart Error:", error);
+        console.log('Stats Error:', error);
     }
 }
-
-setInterval(updateChart, 2000);
-updateChart();
-
-
-// ---------------- WEBCAM ----------------
-
-const video = document.getElementById("webcam");
-
-navigator.mediaDevices.getUserMedia({
-    video: true
-})
-.then(stream => {
-    video.srcObject = stream;
-})
-.catch(error => {
-    console.log("Camera Error:", error);
-});
-
-
-// ---------------- LIVE EMOTION ----------------
-
-const canvas = document.createElement("canvas");
 
 async function detectEmotion() {
-
     if (!video.videoWidth) return;
-
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
-    const ctx = canvas.getContext("2d");
-
-    ctx.drawImage(
-        video,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    const image = canvas.toDataURL("image/jpeg");
+    const ctx2 = canvas.getContext('2d');
+    ctx2.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const image = canvas.toDataURL('image/jpeg');
 
     try {
-
         const response = await fetch('/detect_frame', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                image: image
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image })
         });
-
         const data = await response.json();
-
         if (data.success) {
-            document.getElementById("emotion").innerText =
-                data.emotion;
+            emotionLabel.innerText = data.emotion;
+            lastUpdateLabel.innerText = new Date().toLocaleTimeString();
+            await loadStats();
         }
-
     } catch (error) {
-        console.log("Emotion Error:", error);
+        console.log('Emotion Error:', error);
     }
 }
 
-setInterval(detectEmotion, 2000);
+function toggleTheme() {
+    document.body.classList.toggle('alt-theme');
+}
 
+async function resetCounts() {
+    try {
+        const response = await fetch('/reset_stats', { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            emotionLabel.innerText = 'Detecting...';
+            lastUpdateLabel.innerText = 'Stats reset';
+            await loadStats();
+        }
+    } catch (error) {
+        console.log('Reset Error:', error);
+    }
+}
+
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => { video.srcObject = stream; })
+    .catch(error => console.log('Camera Error:', error));
+
+setInterval(detectEmotion, 2200);
+loadStats();
+
+themeToggle.addEventListener('click', toggleTheme);
+resetStats.addEventListener('click', resetCounts);
 </script>
 
 </body>

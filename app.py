@@ -62,7 +62,17 @@ def live_emotion():
 #-----------Analytics API----------------
 @app.route('/emotion_stats')
 def emotion_stats():
-   return detector.emotion_stats
+    return detector.emotion_stats
+
+@app.route('/reset_stats', methods=['POST'])
+def reset_stats():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    for key in detector.emotion_stats:
+        detector.emotion_stats[key] = 0
+    detector.latest_emotion = "Detecting..."
+    return {"success": True}
 
 @app.route('/detect_frame', methods=['POST'])
 def detect_frame():

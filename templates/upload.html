@@ -10,25 +10,29 @@
 <div class="sidebar">
     <h2>Emotion AI</h2>
     <a href="/">🏠 Home</a>
-    <a href="/upload">📁 Upload Image</a>
+    <a href="/upload" class="active">📁 Upload Image</a>
     <a href="/logout">🚪 Logout</a>
 </div>
 
 <div class="main">
 
-    <h1>Upload Image for Emotion Detection</h1>
+    <div class="top-bar">
+        <div>
+            <h1>Upload Image</h1>
+            <p class="lead">Choose an image and let the AI detect the prevailing emotion.</p>
+        </div>
+    </div>
 
     <div class="upload-container">
-
         <form method="POST" enctype="multipart/form-data">
-
             <div class="upload-box">
-                <input type="file" name="image" required>
-                <p>📁 Choose an image or drag & drop</p>
+                <input type="file" name="image" id="imageInput" accept="image/*" required>
+                <p>📁 Choose an image or drag & drop here</p>
             </div>
 
-            <button type="submit">Detect Emotion</button>
+            <img id="imagePreview" class="image-preview" alt="Image preview" />
 
+            <button type="submit" class="button primary">Detect Emotion</button>
         </form>
 
         {% if emotion %}
@@ -37,10 +41,25 @@
             <p class="emotion">{{ emotion }}</p>
         </div>
         {% endif %}
-
     </div>
 
 </div>
+
+<script>
+const imageInput = document.getElementById('imageInput');
+const imagePreview = document.getElementById('imagePreview');
+
+imageInput.addEventListener('change', () => {
+    const file = imageInput.files[0];
+    if (!file) {
+        imagePreview.src = '';
+        imagePreview.classList.remove('visible');
+        return;
+    }
+    imagePreview.src = URL.createObjectURL(file);
+    imagePreview.classList.add('visible');
+});
+</script>
 
 </body>
 </html>
