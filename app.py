@@ -87,16 +87,23 @@ def detect_frame():
         with open(path, "wb") as f:
             f.write(image_bytes)
 
-        emotion = detect_emotion_image(path)
+        result = detect_emotion_image(path)
+        emotion = result.get('emotion')
+        region = result.get('region')
         detector.latest_emotion = emotion
 
         if emotion in detector.emotion_stats:
             detector.emotion_stats[emotion] += 1
 
-        return {
+        response = {
             "success": True,
             "emotion": emotion
         }
+
+        if region:
+            response["region"] = region
+
+        return response
 
     except Exception as e:
         return {

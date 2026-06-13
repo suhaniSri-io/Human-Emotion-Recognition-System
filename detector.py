@@ -19,7 +19,15 @@ def detect_emotion_image(path):
             actions=['emotion'],
             enforce_detection=False
         )
-        return result[0]['dominant_emotion']
+        emotion = result[0].get('dominant_emotion', 'No face detected')
+        region = result[0].get('region')
+        return {
+            'emotion': emotion,
+            'region': region
+        }
 
     except Exception:
-        return "No face detected"
+        return {
+            'emotion': 'No face detected',
+            'region': None
+        }

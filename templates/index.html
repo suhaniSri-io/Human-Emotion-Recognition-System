@@ -38,7 +38,10 @@
                 <h3>🎥 Live Detection</h3>
                 <span class="badge">Real-time</span>
             </div>
-            <video id="webcam" autoplay playsinline class="video-box"></video>
+            <div class="video-wrap">
+                <video id="webcam" autoplay playsinline class="video-box"></video>
+                <canvas id="overlayCanvas" class="overlay-canvas"></canvas>
+            </div>
             <div class="live-summary">
                 <div>
                     <span>Current emotion</span>
@@ -187,6 +190,12 @@ async function detectEmotion() {
             emotionLabel.innerText = data.emotion;
             lastUpdateLabel.innerText = new Date().toLocaleTimeString();
             await loadStats();
+
+            if (data.region) {
+                drawFaceBox(data.region);
+            } else {
+                clearFaceBox();
+            }
         }
     } catch (error) {
         console.log('Emotion Error:', error);
@@ -211,8 +220,44 @@ async function resetCounts() {
     }
 }
 
+const overlayCanvas = document.getElementById('overlayCanvas');
+const overlayCtx = overlayCanvas.getContext('2d');
+
+function resizeOverlay() {
+    overlayCanvas.width = video.clientWidth;
+    overlayCanvas.height = video.clientHeight;
+}
+
+function clearFaceBox() {
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+}
+
+function drawFaceBox(region) {
+    clearFaceBox();
+    if (!region) return;
+
+    const scaleX = overlayCanvas.width / video.videoWidth;
+    const scaleY = overlayCanvas.height / video.videoHeight;
+    const x = region.x * scaleX;
+    const y = region.y * scaleY;
+    const width = region.w * scaleX;
+    const height = region.h * scaleY;
+
+    overlayCtx.strokeStyle = '#f472b6';
+    overlayCtx.lineWidth = 4;
+    overlayCtx.strokeRect(x, y, width, height);
+    overlayCtx.fillStyle = 'rgba(244, 114, 182, 0.18)';
+    overlayCtx.fillRect(x, y, width, height);
+}
+
 navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => { video.srcObject = stream; })
+    .then(stream => {
+        video.srcObject = stream;
+        video.addEventListener('loadedmetadata', () => {
+            resizeOverlay();
+        });
+        window.addEventListener('resize', resizeOverlay);
+    })
     .catch(error => console.log('Camera Error:', error));
 
 setInterval(detectEmotion, 2200);
