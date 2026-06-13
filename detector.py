@@ -1,5 +1,3 @@
-from deepface import DeepFace
-
 latest_emotion = "Detecting..."
 
 emotion_stats = {
@@ -14,6 +12,8 @@ emotion_stats = {
 
 def detect_emotion_image(path):
     try:
+        from deepface import DeepFace
+
         result = DeepFace.analyze(
             img_path=path,
             actions=['emotion'],
