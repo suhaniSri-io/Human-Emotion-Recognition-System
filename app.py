@@ -2,9 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from detector import detect_emotion_image
 import detector
 import base64
-# import numpy as np
-# import cv2
-from deepface import DeepFace
 app = Flask(__name__)
 app.secret_key = "emotion_ai_secret"
 
@@ -67,43 +64,35 @@ def live_emotion():
 def emotion_stats():
    return detector.emotion_stats
 
-# @app.route('/detect_frame', methods=['POST'])
-# def detect_frame():
-#     try:
-#         data = request.json['image']
+@app.route('/detect_frame', methods=['POST'])
+def detect_frame():
+    try:
+        data = request.json['image']
 
-#         # Remove base64 header
-#         image_data = data.split(',')[1]
+        # Remove base64 header
+        image_data = data.split(',')[1]
+        image_bytes = base64.b64decode(image_data)
 
-#         image_bytes = base64.b64decode(image_data)
+        path = "static/upload.jpg"
+        with open(path, "wb") as f:
+            f.write(image_bytes)
 
-#         np_arr = np.frombuffer(image_bytes, np.uint8)
+        emotion = detect_emotion_image(path)
+        detector.latest_emotion = emotion
 
-#         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        if emotion in detector.emotion_stats:
+            detector.emotion_stats[emotion] += 1
 
-#         result = DeepFace.analyze(
-#             frame,
-#             actions=['emotion'],
-#             enforce_detection=False
-#         )
+        return {
+            "success": True,
+            "emotion": emotion
+        }
 
-    #     emotion = result[0]['dominant_emotion']
-    #     detector.latest_emotion = emotion
-
-    #     if emotion in detector.emotion_stats:
-    #      detector.emotion_stats[emotion] += 1
-
-
-    #     return {
-    #         "success": True,
-    #         "emotion": emotion
-    #     }
-
-    # except Exception as e:
-    #     return {
-    #         "success": False,
-    #         "error": str(e)
-    #     }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 if __name__ == "__main__":
     app.run(debug=True)
